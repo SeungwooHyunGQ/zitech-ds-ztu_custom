@@ -1,0 +1,20 @@
+# Build output
+build/
+
+# IDE settings
+.settings/
+.project
+.cproject
+*.launch
+
+# Object files
+*.o
+*.d
+*.elf
+*.bin
+*.lst
+*.map
+
+# OS files
+.DS_Store
+Thumbs.db
