@@ -116,7 +116,7 @@ void zbdemo_bdbInitCb(u8 status, u8 joinedNetwork)
 #endif
         } else {
             // 페어링 모드 LED blink (500ms ON / 500ms OFF, 무한)
-            light_blink_start(0, 500, 500);
+            //light_blink_start(60, 500, 500);
 
             u16 jitter = 0;
             do {
