@@ -489,7 +489,10 @@ status_t sampleSensor_iasZoneCb(zclIncomingAddrInfo_t *pAddrInfo, u8 cmdId, void
 #ifdef ZCL_POLL_CTRL
 static ev_timer_event_t *zclFastPollTimeoutTimerEvt = NULL;
 static ev_timer_event_t *zclCheckInTimerEvt = NULL;
+static ev_timer_event_t *zclPollStopTimerEvt = NULL;
 static bool isFastPollMode = FALSE;
+
+#define POLL_ACTIVE_DURATION    5000    // Check-In 후 poll 유지 시간 (5초)
 
 void sampleSensor_zclCheckInCmdSend(void)
 {
@@ -503,6 +506,13 @@ void sampleSensor_zclCheckInCmdSend(void)
     zcl_pollCtrl_checkInCmd(SAMPLE_SENSOR_ENDPOINT, &dstEpInfo, TRUE);
 }
 
+s32 sampleSensor_zclPollStopCb(void *arg)
+{
+    zb_setPollRate(0);
+    zclPollStopTimerEvt = NULL;
+    return -1;
+}
+
 s32 sampleSensor_zclCheckInTimerCb(void *arg)
 {
     zcl_pollCtrlAttr_t *pPollCtrlAttr = zcl_pollCtrlAttrGet();
@@ -512,24 +522,33 @@ s32 sampleSensor_zclCheckInTimerCb(void *arg)
         return -1;
     }
 
+    // Check-In 시 일시적으로 poll 활성화
+    zb_setPollRate(POLL_RATE);
     sampleSensor_zclCheckInCmdSend();
+
+    // 일정 시간 후 poll 중지
+    if (zclPollStopTimerEvt) {
+        TL_ZB_TIMER_CANCEL(&zclPollStopTimerEvt);
+    }
+    zclPollStopTimerEvt = TL_ZB_TIMER_SCHEDULE(sampleSensor_zclPollStopCb, NULL, POLL_ACTIVE_DURATION);
 
     return 0;
 }
 
 void sampleSensor_zclCheckInStart(void)
 {
-    if (zb_bindingTblSearched(ZCL_CLUSTER_GEN_POLL_CONTROL, SAMPLE_SENSOR_ENDPOINT)) {
-        zcl_pollCtrlAttr_t *pPollCtrlAttr = zcl_pollCtrlAttrGet();
+    zcl_pollCtrlAttr_t *pPollCtrlAttr = zcl_pollCtrlAttrGet();
 
-        if (!zclCheckInTimerEvt) {
-            zclCheckInTimerEvt = TL_ZB_TIMER_SCHEDULE(sampleSensor_zclCheckInTimerCb, NULL, pPollCtrlAttr->chkInInterval * POLL_RATE_QUARTERSECONDS);
+    if (!zclCheckInTimerEvt) {
+        zclCheckInTimerEvt = TL_ZB_TIMER_SCHEDULE(sampleSensor_zclCheckInTimerCb, NULL, pPollCtrlAttr->chkInInterval * POLL_RATE_QUARTERSECONDS);
 
-            if (pPollCtrlAttr->chkInInterval) {
-                sampleSensor_zclCheckInCmdSend();
-            }
+        if (pPollCtrlAttr->chkInInterval) {
+            sampleSensor_zclCheckInCmdSend();
         }
     }
+
+    // poll 중지 → Check-In 타이머에서만 일시적으로 poll
+    zb_setPollRate(0);
 }
 
 void sampleSensor_zclSetFastPollMode(bool fastPollMode)

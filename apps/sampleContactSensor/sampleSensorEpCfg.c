@@ -161,7 +161,7 @@ const zclAttrInfo_t iasZone_attrTbl[] = {
 #ifdef ZCL_POLL_CTRL
 /* Poll Control */
 zcl_pollCtrlAttr_t g_zcl_pollCtrlAttrs = {
-    .chkInInterval       = 0x3840,
+    .chkInInterval       = 0xF0,       // 60초 (240 quarter-seconds)
     .longPollInterval    = 0x14,
     .shortPollInterval   = 0x02,
     .fastPollTimeout     = 0x28,
