@@ -50,7 +50,7 @@ extern "C" {
 #define PC1_INPUT_ENABLE        1
 #define	PULL_WAKEUP_SRC_PC1     PM_PIN_PULLDOWN_100K
 
-// 네트워크 LED - PD3, LOW 활성
+// 네트워크 LED - PD3, HIGH 활성
 #define LED1                    GPIO_PD3
 #define PD3_FUNC                AS_GPIO
 #define PD3_OUTPUT_ENABLE       1

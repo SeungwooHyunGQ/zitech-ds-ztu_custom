@@ -76,11 +76,14 @@ s32 zclLightTimerCb(void *arg)
     u32 interval = 0;
 
     if (g_sensorAppCtx.sta == g_sensorAppCtx.oriSta) {
-        g_sensorAppCtx.times--;
-        if (g_sensorAppCtx.times <= 0) {
-            g_sensorAppCtx.timerLedEvt = NULL;
-            return -1;
+        if (g_sensorAppCtx.times != 0) {
+            g_sensorAppCtx.times--;
+            if (g_sensorAppCtx.times == 0) {
+                g_sensorAppCtx.timerLedEvt = NULL;
+                return -1;
+            }
         }
+        // times == 0: 무한 blink
     }
 
     g_sensorAppCtx.sta = !g_sensorAppCtx.sta;

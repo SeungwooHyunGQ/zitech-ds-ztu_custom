@@ -115,6 +115,9 @@ void zbdemo_bdbInitCb(u8 status, u8 joinedNetwork)
             sampleSensor_zclCheckInStart();
 #endif
         } else {
+            // 페어링 모드 LED blink (500ms ON / 500ms OFF, 무한)
+            light_blink_start(0, 500, 500);
+
             u16 jitter = 0;
             do {
                 jitter = zb_random() % 0x0fff;
@@ -147,7 +150,7 @@ void zbdemo_bdbCommissioningCb(u8 status, void *arg)
 {
     switch (status) {
     case BDB_COMMISSION_STA_SUCCESS:
-        light_blink_start(2, 200, 200);
+        light_blink_stop();
 
         zb_setPollRate(POLL_RATE);
 
@@ -167,6 +170,7 @@ void zbdemo_bdbCommissioningCb(u8 status, void *arg)
     case BDB_COMMISSION_STA_NOT_AA_CAPABLE:
         break;
     case BDB_COMMISSION_STA_NO_NETWORK:
+        break;
     case BDB_COMMISSION_STA_TCLK_EX_FAILURE:
     case BDB_COMMISSION_STA_TARGET_FAILURE:
         {
